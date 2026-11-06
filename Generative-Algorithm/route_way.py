@@ -101,11 +101,16 @@ def generate_random_population(pop_size, all_waypoints):
     return [generate_random_agent(all_waypoints) for _ in range(pop_size)]
 
 
-def run_genetic_algorithm(generations=5000, population_size=100, csv_file=WAYPOINT_CSV):
+def run_genetic_algorithm(generations=5000, population_size=100,
+                          csv_file=WAYPOINT_CSV, seed=None):
     """The core of the Genetic Algorithm.
 
     `generations` and `population_size` must be a multiple of 10.
+    Pass `seed` to make a run reproducible.
     """
+    if seed is not None:
+        random.seed(seed)
+
     waypoint_distances, _, all_waypoints = load_waypoints(csv_file)
 
     all_route = []

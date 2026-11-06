@@ -61,7 +61,6 @@ def build_model3(max_seqlen, encoding_len):
 	return model
 
 TEMP_PATH = 'temp'
-os.makedirs(TEMP_PATH, exist_ok=True)
 
 class Vocabulary():
 	def __init__(self, tokens):
@@ -150,6 +149,7 @@ def train_model(content, max_seqlen, build_model, step=1,
 	
 	# write text to files
 	def __write_text__(file_name, generate_text):
+		os.makedirs(TEMP_PATH, exist_ok=True)
 		text = ''.join(generate_text)
 		print('\n**** Generate text *****\n', text)
 		with open(os.path.join(TEMP_PATH, file_name), "w", encoding="utf-8") as file:

@@ -13,7 +13,8 @@ from tensorflow.keras.models import Sequential
 # my modules
 from training_history import TrainingHistory
 
-X_train = [[-0.4326, 1.1909], 
+# Two interleaved groups of 2D points; the network learns to separate them.
+X_TRAIN = [[-0.4326, 1.1909], 
 	[3.0, 4.0],
 	[0.1253 , -0.0376   ],
 	[0.2877 ,   0.3273  ],
@@ -30,11 +31,12 @@ X_train = [[-0.4326, 1.1909],
 	[3.5 ,   -4.7  ],
 	[3.0 ,   -5.0  ]]
 
-Y_train = [ 1 , 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0]
+Y_TRAIN = [ 1 , 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0]
 
-X_train = np.array(X_train)
-Y_train = np.array(Y_train)
-X_test, Y_test = X_train, Y_train
+
+def load_dataset():
+	"""Return the (X, Y) toy dataset as numpy arrays."""
+	return np.array(X_TRAIN), np.array(Y_TRAIN)
 
 def build_MLP(features):
 	model = Sequential()
@@ -56,20 +58,22 @@ def build_MLP(features):
 				metrics=['accuracy'])
 	return model
 
-model = build_MLP(X_train.shape[1])
-his = TrainingHistory()
-def training_model(model, step_visual=0, visual=None):
-	model.fit(X_train, Y_train, epochs=10, verbose=0, callbacks=[his])	
-	visual.update_line(his.loss, his.accuracy)
-	
-	iterator = ((step_visual+1)*10)
-	if iterator%50 == 0:
-		print("============= Iterator %d ================" %  iterator)
-		# evaluate after trained
-		scores = model.evaluate(X_train, Y_train, verbose=0)
-		print("Evalute model: %s = %.4f" % (model.metrics_names[0] ,scores[0]))
-		print("Evalute model: %s = %.4f" % (model.metrics_names[1] ,scores[1]*100))
-	return model
+def make_trainer(X_train, Y_train, history):
+	"""Build the per-step training callback used by Visualization.train()."""
+	def training_model(model, step_visual=0, visual=None):
+		model.fit(X_train, Y_train, epochs=10, verbose=0, callbacks=[history])
+		if visual is not None:
+			visual.update_line(history.loss, history.accuracy)
+
+		iterator = ((step_visual + 1) * 10)
+		if iterator % 50 == 0:
+			print("============= Iterator %d ================" % iterator)
+			# evaluate after trained
+			scores = model.evaluate(X_train, Y_train, verbose=0)
+			print("Evaluate model: %s = %.4f" % (model.metrics_names[0], scores[0]))
+			print("Evaluate model: %s = %.4f" % (model.metrics_names[1], scores[1] * 100))
+		return model
+	return training_model
 		
 class Visualization():	
 	def __init__(self, model, X_train, Label_train, title, dpi=70):
@@ -136,7 +140,8 @@ class Visualization():
 		colors = ['navy', 'orangered' ]
 		
 		# Put the result into a color plot
-		Z = model.predict(np.c_[self.xx.ravel(), self.yy.ravel()])				
+		# (use self.model, which train() keeps up to date, not a global)
+		Z = self.model.predict(np.c_[self.xx.ravel(), self.yy.ravel()], verbose=0)
 		Z = Z.reshape(self.xx.shape)
 		con1 = self.ax1.contourf(self.xx, self.yy, Z, cmap=plt.cm.coolwarm, alpha=0.8)	
 			
@@ -177,5 +182,16 @@ class Visualization():
 		else:
 			plt.show()
 
-visual = Visualization(model, X_train, Y_train, title="Example: binary classification")
-visual.train(training_model, iterations=70, save_movie=False)
+def main():
+	X_train, Y_train = load_dataset()
+	model = build_MLP(X_train.shape[1])
+	history = TrainingHistory()
+	training_model = make_trainer(X_train, Y_train, history)
+
+	visual = Visualization(model, X_train, Y_train,
+					title="Example: binary classification")
+	visual.train(training_model, iterations=70, save_movie=False)
+
+
+if __name__ == '__main__':
+	main()

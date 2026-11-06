@@ -1,3 +1,9 @@
+> **Note:** this is the preserved README of the upstream project this collection
+> grew from ([adminho/machine-learning](https://github.com/adminho/machine-learning)).
+> Folder links have been remapped to this repository's layout, but some entries
+> describe examples that are not included here. For what actually ships in this
+> repository, see the [root README](../README.md).
+
 The project will be updated continuously ......  :fire:
 
 # Machine learning + Deep learning examples
@@ -56,41 +62,41 @@ All examples are written in Python language, so you need to setup your environme
 * 🔥 [Tensorflow](https://colab.research.google.com/drive/1iX9d2bl1ogh2qo2U-NTot_XuVbfAqKi9)
 * 🔥 [PYTorch](https://colab.research.google.com/drive/1BtVCWpwWovcVqkvEX5HaUAIyUOlekC0m)
 * 🔥 [Keras]  
-* [Prepare datasets](Prepare_datasets)
+* [Prepare datasets](../Dataset-Prepare)
   * Getting dataset examples with Keras library.
   * Getting dataset examples with scikit-learn library.
-* [Activation function](Activation_function)  
+* [Activation function](../Activation)  
 
 ### Machine learning/Deep learning (Basics)
 
 * 🔥[Basic Machine learning](https://colab.research.google.com/drive/1ZRMW3fXGWUvkeFPM07qtFXoSbLmuMpO1): Regression, Logistic Regression, Decision Tree, Support Vector Machine (SVM), Naive Bayes, KK-N (K-Nearest Neighbors), Kmeans etc
-* 📈 [Linear and nonlinear regression](Linear_regression)
+* 📈 [Linear and nonlinear regression](../Linear-Regression)
   1. Predicting food truck.
   2. Predicting house price.
   3. Predicting Thailand population history.
   4. Predicting average income per month per household  of Thailand (B.E 41-58).
   5. Predicting Boston house-prices.    
-* 📉 [Logistic regression](Logistic_regression)
+* 📉 [Logistic regression](../Log-Regression)
 * 🧘‍♂ [Principal Component Analysis](https://colab.research.google.com/drive/1FoGtB5xW1aWeQ7hlTmuB1AhXuFMx-jTo)
-* 📄 [Text classification](Text_classification)
+* 📄 [Text classification](../Text-Classification)
 * ✂ Classification
   1. [Classification and Clustering (compare between KK-N and K-means)](https://colab.research.google.com/drive/1B7ZxRDs3x3CsitI49xY7l3pWFYYJYsvB)
   2. [Naive_Bayes]()
 * 🌳 [Decision tree & Random Forests]
 * [Gaussian Processes (GP)]
 * [Graph Neural Networks (GNN)]
-* [Genetic algorithm](Genetic_algorithm): Computing the optimal road trip across 20 provinces of Thailand.
+* [Genetic algorithm](../Generative-Algorithm): Computing the optimal road trip across 20 provinces of Thailand.
  * 🔍 [Attention]
-* ⛓ [Neural network (multilayer perceptrons) paints an image.](Art_example)
-* ⛓ [Neural network](Neural_network)
+* ⛓ Neural network (multilayer perceptrons) paints an image. *(not included in this repository)*
+* ⛓ [Neural network](../Neural-Network)
   * Calculating the logic.
   * Classifying the elements into two groups (binary classification).
-* 🔮 [Autoencoder](Autoencoder)
-* 👀 [Convolutional neural network](Convolutional_neural_network)
+* 🔮 [Autoencoder](../Encoder-Pack)
+* 👀 [Convolutional neural network](../Convolutional-Network)
 * 📈 Graph Neural Networks
-* 📝 [Recurrent neural network](Recurrent_neural_network)
+* 📝 [Recurrent neural network](../Recurrent-Neural-Network)
   * Showing AI writing HTML code, article and Thai novel.
-* 👥 [Generative adversarial network](Generative_adversarial_network)
+* 👥 [Generative adversarial network](../Generative-Adversarial)
 * 🔢 [MNIST example](https://colab.research.google.com/drive/1KsGnaw9jE4wnmXK2mf2C4-Ylnj6nXbFw): showing 9 learning techniques to recognize handwritten digits including (using MNIST database of handwritten digits)  
   1. Nearest neighbors
   2. Support vector
@@ -106,7 +112,7 @@ All examples are written in Python language, so you need to setup your environme
 
 ### Computer Vision
 
-* 📸 [ImageNet classification](ImageNet_example): showing how to use models including (Convolutional neural network or CNN) 
+* 📸 [ImageNet classification](../IMGNET-Pre-Trained): showing how to use models including (Convolutional neural network or CNN) 
   1. Xception
   2. VGG16
   3. VGG19
@@ -173,7 +179,7 @@ All examples are written in Python language, so you need to setup your environme
    * 
 ### Miscellaneous
 * 🛒 [Recommendation Systems]
-* 🖼 [Artistic style](Artistic_style)
+* 🖼 [Artistic style](../Convolutional-Network)
 * 🕵️ Anomaly Detection	
 * ⏰ Time-Series	
 * 🏘️ Topic Modeling
@@ -228,7 +234,7 @@ All examples are written in Python language, so you need to setup your environme
 | [บทที่ 4](https://drive.google.com/file/d/1ju_wF6c9CNiYWfSzIIuqV9aUuEa4eurh/view) | [บทที่ 10](https://drive.google.com/file/d/129-FPDP-9FJrMNsVqWMJdER762jOzs9G/view) |
 |  | [บทที่ 11](https://drive.google.com/file/d/15njvUq8Vbq3SRA-PHxVGq8Isr1cL3F3d/view) |
 
-[![](books/ebook_AI_easy_1_2.png)](https://www.mebmarket.com/web/index.php?action=BookDetails&data=YToyOntzOjc6InVzZXJfaWQiO3M6NzoiMTcyNTQ4MyI7czo3OiJib29rX2lkIjtzOjY6IjEwODI0NiI7fQ)
+[หนังสือ AI ไม่ยาก เข้าใจได้ด้วยเลขม. ปลาย](https://www.mebmarket.com/web/index.php?action=BookDetails&data=YToyOntzOjc6InVzZXJfaWQiO3M6NzoiMTcyNTQ4MyI7czo3OiJib29rX2lkIjtzOjY6IjEwODI0NiI7fQ)
 
 
 ### โค้ดตัวอย่าง (Python) ประกอบหนังสือ

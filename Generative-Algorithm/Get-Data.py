@@ -21,7 +21,7 @@ import googlemaps
 import pandas as pd
 from tqdm import tqdm
 
-logging.basicConfig(format="%(asctime)s: %(levelname)s: %(message)s", level=logging.INFO)
+LOG_FORMAT = "%(asctime)s: %(levelname)s: %(message)s"
 
 HEAD_COLUMNS = ["waypoint1", "waypoint2", "distance_m", "duration_s"]
 PROVINCE_CSV = "Province.csv"
@@ -79,6 +79,9 @@ def get_waypoints(num_province=10, file_tosave="my-waypoints-dist-dur.csv"):
 
 
 if __name__ == "__main__":
+    # configure logging here, not at import: it mutates the root logger
+    logging.basicConfig(format=LOG_FORMAT, level=logging.INFO)
+
     # Limitations of the Google API: the maximum allowed waypoints is 23
     # plus the origin and destination.
     # routing possibilities for 20 provinces = 20! = 2432902008176640000

@@ -10,10 +10,28 @@ genetic algorithms. Each folder is a self-contained lesson you can run and tweak
 > in the Google Cloud console if you have not already. The script now reads the key
 > from the `GOOGLE_MAPS_API_KEY` environment variable.
 
+> ⚠️ **Corrupted binaries removed.** Every binary file this repository tracked had
+> been destroyed by a UTF-8 text round trip: bytes that are not valid UTF-8 were
+> each replaced with U+FFFD, wiping out 57–70% of every file. Text files were
+> unaffected. The damage is not reversible, so these five files were removed:
+>
+> | File | Size | Damage |
+> | --- | --- | --- |
+> | `Deep-Learning/Model.h5` | 24.7 MB | 69.5% of bytes destroyed |
+> | `Object-Oriented/Orient.whl` | 265 KB | 65.6% destroyed |
+> | `Dataset/Stud-Classification.xlsx` | 16.9 KB | 57.3% destroyed (same data survives in the CSVs) |
+> | `Dataset/Face-Classification.jpg` | 1 byte | empty placeholder |
+> | `Neural-Network/Image/Logic.PNG` | 1 byte | empty placeholder |
+>
+> They remain in git history if you want to inspect them. Re-add good copies
+> from their original sources if you need them — and transfer binaries in
+> binary mode, never through a text pipeline. `tests/test_repo_integrity.py`
+> now fails CI if a corrupted binary is ever committed again.
+
 ## Setup
 
-Python **3.9 – 3.11** is recommended (TensorFlow-based examples need a Python
-version supported by your TensorFlow build).
+Python **3.9 – 3.12** is supported and tested in CI (TensorFlow-based examples
+additionally need a Python version supported by your TensorFlow build).
 
 ```bash
 python -m venv .venv
@@ -52,20 +70,24 @@ python Regression.py
 | `Object-Oriented` | Object detection in 10 lines with `imageai` | `Detection.py` | `imageai`, RetinaNet weights |
 | `Hash` | Kalman-filter sliding-window lane tracking utilities | `CrowndStrike.py` (library) | `filterpy` |
 | `Text-Detection` | Vendored [Matterport Mask R-CNN](https://github.com/matterport/Mask_RCNN) utilities (third-party, TF1-era) | `Model.py`, `Utilities.py` | see upstream |
-| `Dataset` | Small CSV datasets shared by the examples | – | – |
-| `Deep-Learning` | Pre-trained demo model | `Model.h5` | – |
+| `Dataset` | Small CSV datasets shared by the examples — see [`Dataset/README.md`](Dataset/README.md) | – | – |
 | `Setup` | Vendored Fast R-CNN CUDA build script + upstream project notes | `PY-Setup.py` | CUDA |
 
 Notes:
 
+* **Nothing happens at import time.** Every script does its work inside a
+  function behind `if __name__ == "__main__":`, so you can import any lesson to
+  reuse its helpers without training a model, downloading a dataset or opening a
+  plot window. A test enforces this.
 * **Module naming** — a few helper modules use `snake_case` names
   (`route_way.py`, `thai_dataset.py`, `training_history.py`) so they can be
   imported by the scripts next to them; Python cannot import files with `-` in
   the name.
 * **Vendored third-party code** (`Text-Detection/`, `Setup/PY-Setup.py`) is kept
-  close to its upstream form and excluded from linting.
+  close to its upstream form and excluded from linting. See
+  [`NOTICES.md`](NOTICES.md) for attributions and licences.
 * Scripts that need large external files (VGG weights, NECTEC corpus, RetinaNet
-  weights) now fail with a clear message telling you what to download and where
+  weights) fail with a clear message telling you what to download and where
   to put it, instead of crashing on a hardcoded `D:/` path.
 
 ## Development
@@ -75,16 +97,32 @@ ruff check .        # lint
 pytest              # run the unit tests (tests/ folder)
 ```
 
-Both run automatically in CI (GitHub Actions) on every push and pull request.
-The tests cover the pure-math core of the examples — activation functions,
-encode/decode helpers, the normal-equation and gradient-descent regressions,
-the logistic cost function, the genetic-algorithm operators and the
-lane-tracking window logic — and skip anything that needs TensorFlow, so they
-stay fast.
+Both run automatically in CI (GitHub Actions) on every push and pull request,
+with tests executed against Python 3.9, 3.10, 3.11 and 3.12.
+
+The suite covers three things and finishes in a few seconds, without needing
+TensorFlow:
+
+1. **The pure-math core** — activation functions, encode/decode helpers, the
+   normal-equation and gradient-descent regressions, the logistic cost
+   function, the genetic-algorithm operators, and the Kalman lane-tracking
+   windows.
+2. **Repository integrity** — every tracked binary must have a valid magic
+   number and contain no U+FFFD replacement characters, so the corruption
+   described above cannot silently return.
+3. **Import safety** — every lesson module must import silently, create no
+   matplotlib figures, and keep its demo body behind a `__main__` guard
+   (checked by parsing the AST, so no heavy dependencies are needed).
+
+## Licence
+
+This project does not declare a licence of its own; see
+[`NOTICES.md`](NOTICES.md) for what that means and for the licences of the
+vendored third-party files.
 
 ## Credits
 
 Many examples are adapted from public tutorials and repositories; source links
-and citations are kept in the header comments of each file. Original learning
-repository by [adminho](https://github.com/adminho/machine-learning) (see
-`Setup/Readme.md`).
+and citations are kept in the header comments of each file, and collected in
+[`NOTICES.md`](NOTICES.md). Original learning repository by
+[adminho](https://github.com/adminho/machine-learning) (see `Setup/Readme.md`).

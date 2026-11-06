@@ -1,3 +1,9 @@
+"""Enumerate the 43 layers of the pre-trained VGG-19 model and dump the
+weights/biases to pickle files.
+
+Nothing happens at import time: call load_vgg() (or run this file) to read the
+.mat model, which is a large download.
+"""
 import os
 import pickle
 
@@ -9,47 +15,60 @@ import scipy.io
 # http://www.vlfeat.org/matconvnet/pretrained/ and set VGG_PATH to its location
 # (or export the VGG_PATH environment variable).
 VGG_PATH = os.environ.get("VGG_PATH", "imagenet-vgg-verydeep-19.mat")
-if not os.path.exists(VGG_PATH):
-    raise SystemExit(
-        "VGG model file not found: %s\n"
-        "Download imagenet-vgg-verydeep-19.mat from "
-        "http://www.vlfeat.org/matconvnet/pretrained/ and set the VGG_PATH "
-        "environment variable to its location." % VGG_PATH
-    )
-dataVGG = scipy.io.loadmat(VGG_PATH)
-dataLayer = dataVGG['layers'][0]
-assert dataLayer.shape == (43,) # all layer
 
-# get color mean
-mean = dataVGG['normalization'][0][0][0]
-assert mean.shape == (224, 224, 3)
-	
-# the average color: Red, Green, Blue should be [123.68, 116.779, 103.939])
-meanColor = np.mean(mean, axis=(0, 1))
 
-W = {}
-B = {}
-for index, layer in enumerate(dataLayer):
-	dd = layer[0][0]	
-	if len(dd) <= 2: 
-		# show 'relu layer' names
-		print(dd[1]) 
-	elif dd[3] == 'pool':		
-		# show 'max pool' layer names
-		print(dd[3]) 		
-	else:		
-		name = dd[3][0]
-		weights, bias = dd[0][0]		
-		# show names of conventional layer and fully connected layer
-		print(name , " | weights:", weights.shape, " | bias:",bias.shape) 		
-		#if not name.startswith('conv') :  # but select save weights and bias of conventional layer only
-		#	continue		
-		W[name] = weights
-		B[name] = bias				
+def load_vgg(vgg_path=None, verbose=True):
+	"""Load the VGG-19 .mat file.
 
-#print all layer (43) in VGG 19 model
+	Returns (W, B, meanColor): the weights and biases keyed by layer name, and
+	the average (R, G, B) colour of the training set.
+	"""
+	vgg_path = vgg_path or VGG_PATH
+	if not os.path.exists(vgg_path):
+		raise SystemExit(
+			"VGG model file not found: %s\n"
+			"Download imagenet-vgg-verydeep-19.mat from "
+			"http://www.vlfeat.org/matconvnet/pretrained/ and set the VGG_PATH "
+			"environment variable to its location." % vgg_path
+		)
+
+	dataVGG = scipy.io.loadmat(vgg_path)
+	dataLayer = dataVGG['layers'][0]
+	assert dataLayer.shape == (43,)  # all layers
+
+	# get color mean
+	mean = dataVGG['normalization'][0][0][0]
+	assert mean.shape == (224, 224, 3)
+
+	# the average color: Red, Green, Blue should be [123.68, 116.779, 103.939]
+	meanColor = np.mean(mean, axis=(0, 1))
+
+	W, B = {}, {}
+	for layer in dataLayer:
+		dd = layer[0][0]
+		if len(dd) <= 2:
+			# 'relu layer' names
+			if verbose:
+				print(dd[1])
+		elif dd[3] == 'pool':
+			# 'max pool' layer names
+			if verbose:
+				print(dd[3])
+		else:
+			name = dd[3][0]
+			weights, bias = dd[0][0]
+			# names of convolutional and fully connected layers
+			if verbose:
+				print(name, " | weights:", weights.shape, " | bias:", bias.shape)
+			W[name] = weights
+			B[name] = bias
+
+	return W, B, meanColor
+
+
+# print all layers (43) in the VGG 19 model
 """
-layer name		Size's weights			Size's bias 
+layer name		Size's weights			Size's bias
 ['conv1_1'] 	(3, 3, 3, 64) 			(1, 64)
 ['relu1_1']
 ['conv1_2'] 	(3, 3, 64, 64) 			(1, 64)
@@ -95,16 +114,21 @@ layer name		Size's weights			Size's bias
 ['prob']
 """
 
-# dump all weights and bias	
-def dumpData():
-	pickle.dump( W, open( "weights.p", "wb" ) )
-	pickle.dump( B, open( "bias.p", "wb" ) )
 
-	WW = pickle.load( open( "weights.p", "rb" ) )
-	BB = pickle.load( open( "bias.p", "rb" ) )
+# dump all weights and bias
+def dumpData(W, B):
+	with open("weights.p", "wb") as f:
+		pickle.dump(W, f)
+	with open("bias.p", "wb") as f:
+		pickle.dump(B, f)
+
+	with open("weights.p", "rb") as f:
+		WW = pickle.load(f)
+	with open("bias.p", "rb") as f:
+		BB = pickle.load(f)
 
 	# Testing
-	print("\nAfter read from pickle file")
+	print("\nAfter reading from the pickle file")
 	print("\nShape of weights")
 	for key, value in sorted(WW.items()):
 		print(key, value.shape)
@@ -113,6 +137,8 @@ def dumpData():
 	for key, value in sorted(BB.items()):
 		print(key, value.shape)
 
-if __name__ == '__main__':	
-	pass
-	#dumpData()
+
+if __name__ == '__main__':
+	W, B, meanColor = load_vgg()
+	print("\nAverage colour (R, G, B):", meanColor)
+	# dumpData(W, B)
