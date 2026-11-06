@@ -7,7 +7,7 @@ name = "aitracking"
 dynamic = ["version"]
 description = "Real-time object detection, tracking and counting (people, vehicles...) for video files, webcams and CCTV/RTSP streams, with a live web dashboard."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = [
     "numpy>=1.23",
     "opencv-python>=4.8",
@@ -34,7 +34,7 @@ version = { attr = "aitracking.__version__" }
 
 [tool.ruff]
 line-length = 120
-target-version = "py39"
+target-version = "py310"
 # Vendored third-party code is kept close to upstream and not linted
 extend-exclude = [
     "lessons/Text-Detection",

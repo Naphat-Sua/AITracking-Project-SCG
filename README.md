@@ -28,7 +28,7 @@ camera / RTSP / video ─► YOLO detection ─► ByteTrack IDs ─► line & z
 
 ## Quick start
 
-Requires Python 3.9 – 3.12.
+Requires Python 3.10 – 3.13.
 
 ```bash
 git clone https://github.com/Naphat-Sua/AITracking-Project-SCG.git
@@ -201,7 +201,7 @@ pytest
 ```
 
 The app tests use a scripted fake tracker and synthetic videos, so they need no
-GPU and no model download. CI runs lint and tests on Python 3.9 – 3.12 for every
+GPU and no model download. CI runs lint and tests on Python 3.10 – 3.13 for every
 push and pull request.
 
 ## Machine-learning lessons

@@ -28,7 +28,7 @@ These are the learning material the [AITracking app](../README.md) grew out of.
 
 ## Setup
 
-Python **3.9 – 3.12** (TensorFlow-based examples additionally need a Python
+Python **3.10 – 3.13** (TensorFlow-based examples additionally need a Python
 version supported by your TensorFlow build). From the repository root:
 
 ```bash
