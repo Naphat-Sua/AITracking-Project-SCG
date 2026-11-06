@@ -1,10 +1,44 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aitracking"
+dynamic = ["version"]
+description = "Real-time object detection, tracking and counting (people, vehicles...) for video files, webcams and CCTV/RTSP streams, with a live web dashboard."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "numpy>=1.23",
+    "opencv-python>=4.8",
+    "pyyaml>=6.0",
+    "fastapi>=0.100",
+    "uvicorn>=0.23",
+    "ultralytics>=8.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "ruff>=0.4", "httpx>=0.24"]
+
+[project.scripts]
+aitrack = "aitracking.cli:main"
+
+[tool.setuptools]
+packages = ["aitracking", "aitracking.static"]
+
+[tool.setuptools.package-data]
+"aitracking.static" = ["*.html"]
+
+[tool.setuptools.dynamic]
+version = { attr = "aitracking.__version__" }
+
 [tool.ruff]
 line-length = 120
 target-version = "py39"
 # Vendored third-party code is kept close to upstream and not linted
 extend-exclude = [
-    "Text-Detection",
-    "Setup/PY-Setup.py",
+    "lessons/Text-Detection",
+    "lessons/Setup/PY-Setup.py",
 ]
 
 [tool.ruff.lint]

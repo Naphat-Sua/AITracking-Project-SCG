@@ -1,128 +1,218 @@
-# AITracking-Project-SCG
+# AITracking
 
-A hands-on collection of **machine learning and deep learning examples** in Python —
-from linear regression written three ways, up to CNNs, RNN text generators, GANs and
-genetic algorithms. Each folder is a self-contained lesson you can run and tweak.
+**Real-time AI object tracking and counting for CCTV, webcams and video files.**
+AITracking detects people and vehicles with YOLO, gives every object a persistent
+ID with ByteTrack, counts who crosses a line (in / out), measures how many are
+inside a zone and how long they stay, and shows it all on a live web dashboard
+with a JSON API and CSV event log.
 
-> ⚠️ **Security note:** earlier revisions of this repository contained hardcoded
-> Google Maps API keys in `Generative-Algorithm/Get-Data.py`. They have been removed
-> from the code, but they still exist in the git history — **revoke/rotate those keys**
-> in the Google Cloud console if you have not already. The script now reads the key
-> from the `GOOGLE_MAPS_API_KEY` environment variable.
+Built for SCG Digital Office. Runs on an ordinary laptop CPU and uses an NVIDIA GPU automatically when one is present.
 
-> ⚠️ **Corrupted binaries removed.** Every binary file this repository tracked had
-> been destroyed by a UTF-8 text round trip: bytes that are not valid UTF-8 were
-> each replaced with U+FFFD, wiping out 57–70% of every file. Text files were
-> unaffected. The damage is not reversible, so these five files were removed:
->
-> | File | Size | Damage |
-> | --- | --- | --- |
-> | `Deep-Learning/Model.h5` | 24.7 MB | 69.5% of bytes destroyed |
-> | `Object-Oriented/Orient.whl` | 265 KB | 65.6% destroyed |
-> | `Dataset/Stud-Classification.xlsx` | 16.9 KB | 57.3% destroyed (same data survives in the CSVs) |
-> | `Dataset/Face-Classification.jpg` | 1 byte | empty placeholder |
-> | `Neural-Network/Image/Logic.PNG` | 1 byte | empty placeholder |
->
-> They remain in git history if you want to inspect them. Re-add good copies
-> from their original sources if you need them — and transfer binaries in
-> binary mode, never through a text pipeline. `tests/test_repo_integrity.py`
-> now fails CI if a corrupted binary is ever committed again.
+```
+camera / RTSP / video ─► YOLO detection ─► ByteTrack IDs ─► line & zone counting ─► dashboard · API · CSV · MP4
+```
 
-## Setup
+![AITracking dashboard: live video with tracked people, a counting line and a zone, plus counters and an event feed](docs/dashboard.jpg)
 
-Python **3.9 – 3.12** is supported and tested in CI (TensorFlow-based examples
-additionally need a Python version supported by your TensorFlow build).
+## Features
+
+- **Any source** – video files, USB webcams (`0`), IP cameras over RTSP/HTTP; streams reconnect automatically when they drop.
+- **Multi-object tracking** – stable IDs per object with ByteTrack (or BoT-SORT), movement trails on screen.
+- **Line counting** – in / out / net per line and per class (person, car, truck…), each object counted once.
+- **Zones** – live occupancy, total entries and average time spent inside (dwell time) for any polygon.
+- **Live dashboard** – annotated video plus counters and an event feed at `http://localhost:8000`.
+- **Data out** – REST/JSON API, every event appended to `.csv` or `.jsonl`, annotated `.mp4` recording, final JSON summary.
+- **Resolution independent config** – lines and zones are written as 0..1 fractions of the frame in one YAML file.
+- **Custom models** – drop in any Ultralytics YOLO weights (e.g. a model trained on helmets, forklifts or pallets).
+- **Docker image** and a test suite that runs in CI without a GPU or model download.
+
+## Quick start
+
+Requires Python 3.9 – 3.12.
 
 ```bash
+git clone https://github.com/Naphat-Sua/AITracking-Project-SCG.git
+cd AITracking-Project-SCG
 python -m venv .venv
-source .venv/bin/activate        # Windows: .venv\Scripts\activate
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
 
-pip install -r requirements.txt              # core: numpy, pandas, sklearn, scipy, matplotlib...
-pip install tensorflow                       # for the deep-learning examples
-pip install -r requirements-dev.txt          # for development: pytest + ruff
+# CPU-only PyTorch is a much smaller download; skip this line if you have an NVIDIA GPU
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+pip install -e .
 ```
 
-Each example is run from **inside its own folder**, e.g.:
+The default model (`yolo11n.pt`, ~5 MB) is downloaded automatically on first run.
+
+**Live dashboard from a webcam**
 
 ```bash
-cd Linear-Regression
-python Regression.py
+aitrack serve --source 0 --config configs/example.yaml
+# open http://localhost:8000
 ```
 
-## What's inside
+**IP camera (RTSP)**
 
-| Folder | Topic | Entry point | Extra requirements |
-| --- | --- | --- | --- |
-| `Activation` | Plot sigmoid / tanh / ReLU / leaky-ReLU activation functions | `Activation.py` | – |
-| `Linear-Regression` | Linear & polynomial regression 7 ways (normal equation, sklearn, TF2, Keras, manual gradient descent, numpy, scipy) | `Regression.py`, `Feature.py` | TF optional |
-| `Log-Regression` | Logistic regression from scratch with animated decision boundary | `Function.py` | – |
-| `Neural-Network` | 2-layer network computing `X1 or X2 xor X3` (TF2), binary classification with live visualization | `Tensorflow.py`, `Class.py` | TensorFlow |
-| `MNIST` | 9 classifiers on handwritten digits: nearest-neighbor, SVM, logistic regression, MLP, CNN 1D/2D, RNN, LSTM, GRU | `Test.py`, `Visual.py` | TF for examples 3-9 |
-| `Principal-Component-Analysis` | PCA of digit images in 2D/3D | `PCA.py` | – |
-| `Encoder-Pack` | Autoencoders for images (MNIST) and words | `Image-Encoder.py`, `Text-Encoder.py` | TensorFlow |
-| `Convolutional-Network` | Neural style transfer (VGG-19) | `Artistic-Style.py` | TensorFlow, VGG-19 `.mat` weights |
-| `IMGNET-Pre-Trained` | Image classification with pre-trained VGG16/VGG19/ResNet50/InceptionV3/Xception | `Image-Classifier.py` | TensorFlow, sample images |
-| `Recurrent-Neural-Network` | Character-level RNN "AI writer" (articles & HTML) | `Train.py` | TensorFlow |
-| `Generative-Adversarial` | GAN generating MNIST digits | `Generate-Image.py` | TensorFlow |
-| `Generative-Algorithm` | Genetic algorithm: optimal road trip across Thai provinces + Google Maps distance matrix | `Get-Data.py` → `Routing.py` | `googlemaps`, `tqdm`, API key |
-| `Text-Classification` | Thai text classification (article/encyclopedia/news/novel) with MLP & CNN | `thai_dataset.py` → `Text-Classify.py` | TensorFlow, `deepcut`, NECTEC corpus |
-| `Dataset-Prepare` | Tour of built-in datasets in Keras and scikit-learn | `1st-Prepare.py`, `2nd-Prepare.py`, `From-MNIST.py` | TF optional |
-| `Object-Oriented` | Object detection in 10 lines with `imageai` | `Detection.py` | `imageai`, RetinaNet weights |
-| `Hash` | Kalman-filter sliding-window lane tracking utilities | `CrowndStrike.py` (library) | `filterpy` |
-| `Text-Detection` | Vendored [Matterport Mask R-CNN](https://github.com/matterport/Mask_RCNN) utilities (third-party, TF1-era) | `Model.py`, `Utilities.py` | see upstream |
-| `Dataset` | Small CSV datasets shared by the examples — see [`Dataset/README.md`](Dataset/README.md) | – | – |
-| `Setup` | Vendored Fast R-CNN CUDA build script + upstream project notes | `PY-Setup.py` | CUDA |
+```bash
+aitrack serve --source "rtsp://user:password@192.168.1.64:554/Streaming/Channels/101" \
+              --config configs/example.yaml --events data/events.csv --host 0.0.0.0
+```
 
-Notes:
+**Process a recorded video and save the results**
 
-* **Nothing happens at import time.** Every script does its work inside a
-  function behind `if __name__ == "__main__":`, so you can import any lesson to
-  reuse its helpers without training a model, downloading a dataset or opening a
-  plot window. A test enforces this.
-* **Module naming** — a few helper modules use `snake_case` names
-  (`route_way.py`, `thai_dataset.py`, `training_history.py`) so they can be
-  imported by the scripts next to them; Python cannot import files with `-` in
-  the name.
-* **Vendored third-party code** (`Text-Detection/`, `Setup/PY-Setup.py`) is kept
-  close to its upstream form and excluded from linting. See
-  [`NOTICES.md`](NOTICES.md) for attributions and licences.
-* Scripts that need large external files (VGG weights, NECTEC corpus, RetinaNet
-  weights) fail with a clear message telling you what to download and where
-  to put it, instead of crashing on a hardcoded `D:/` path.
+```bash
+aitrack run --source entrance.mp4 --classes person \
+            --line "door=0.5,0,0.5,1" --zone "queue=0.05,0.55;0.4,0.55;0.4,0.95;0.05,0.95" \
+            --output entrance-tracked.mp4 --events events.csv --summary summary.json
+```
+
+`aitrack run` prints a JSON summary when it finishes. This is the real (shortened)
+output for OpenCV's 795-frame pedestrian sample
+[`vtest.avi`](https://github.com/opencv/opencv/blob/4.x/samples/data/vtest.avi)
+with a vertical line through the middle and a zone on the left:
+
+```json
+{
+  "status": "finished", "frames": 795, "fps": 4.4,
+  "unique": {"person": 34}, "unique_total": 34,
+  "lines": [{"name": "middle", "in": 4, "out": 16, "net": -12}],
+  "zones": [{"name": "left-side", "occupancy": 1, "entries": 14, "avg_dwell_s": 4.34}],
+  "events_total": 47
+}
+```
+
+Add `--show` to watch a live window while it runs (press `q` to stop), and
+`python -m aitracking ...` works the same as `aitrack ...`.
+
+## Configuration
+
+Everything can be set in a YAML file ([`configs/example.yaml`](configs/example.yaml));
+command-line flags override the file.
+
+```yaml
+source: 0                         # file path, webcam index or rtsp:// URL
+model: yolo11n.pt                 # yolo11s.pt / yolo11m.pt = more accurate, slower
+classes: [person, car, truck, motorcycle]
+conf: 0.35
+lines:
+  - name: entrance
+    points: [[0.5, 0.05], [0.5, 0.95]]          # x, y as fractions of the frame
+zones:
+  - name: waiting-area
+    points: [[0.05, 0.55], [0.4, 0.55], [0.4, 0.95], [0.05, 0.95]]
+```
+
+**Which way is "in"?** Imagine walking along the line from its first point to its
+second: crossing towards your left-hand side is `in`. In practice:
+
+| Line drawn | `in` means moving |
+| --- | --- |
+| top → bottom (vertical) | left → right |
+| left → right (horizontal) | bottom → top |
+
+Swap the two points to flip it. Objects are counted at the bottom-centre of their
+box (where they touch the floor); use `anchor: center` for top-down cameras.
+
+| Flag | Meaning | Default |
+| --- | --- | --- |
+| `--source`, `-s` | video file, webcam index, or stream URL | `0` |
+| `--config`, `-c` | YAML config file | – |
+| `--model`, `-m` | YOLO weights | `yolo11n.pt` |
+| `--classes` | comma separated class names | all |
+| `--conf` | minimum detection confidence | `0.35` |
+| `--imgsz` | inference size (lower = faster) | `640` |
+| `--device` | `cpu`, `0` (GPU 0), `mps` | auto |
+| `--tracker` | `bytetrack.yaml` or `botsort.yaml` | `bytetrack.yaml` |
+| `--line` | `[name=]x1,y1,x2,y2` – repeatable | – |
+| `--zone` | `[name=]x1,y1;x2,y2;x3,y3…` – repeatable | – |
+| `--events`, `-e` | append events to `.csv` / `.jsonl` | – |
+| `--loop` | restart a video file at the end (demos) | off |
+| `--max-frames` | stop after N frames | – |
+| `run --output`, `-o` | save annotated video | – |
+| `run --summary` | save final counts as JSON | – |
+| `serve --host` / `--port` | dashboard address | `127.0.0.1:8000` |
+
+## Dashboard & API
+
+`aitrack serve` starts the dashboard and these endpoints:
+
+| Endpoint | Returns |
+| --- | --- |
+| `GET /` | dashboard page |
+| `GET /stream.mjpg` | live annotated video (embed it in any `<img>` tag) |
+| `GET /snapshot.jpg` | latest annotated frame |
+| `GET /api/stats` | tracked now, unique objects, FPS, line counts, zone occupancy |
+| `GET /api/events?limit=50` | most recent events, newest first |
+| `GET /api/events/file` | download the full event log (needs `--events`) |
+| `GET /healthz` | liveness probe |
+| `GET /docs` | interactive API docs |
+
+An event looks like this (also the CSV columns):
+
+```json
+{"kind": "line_cross", "name": "entrance", "track_id": 12, "cls": "person", "frame": 431,
+ "t": 17.24, "direction": "in", "dwell_s": null, "wall_time": "2026-11-06T09:15:02+07:00"}
+```
+
+`kind` is `line_cross`, `zone_enter` or `zone_exit` (`zone_exit` carries `dwell_s`).
+
+> The dashboard has no login. It binds to `127.0.0.1` by default; only use
+> `--host 0.0.0.0` on a trusted network or behind a reverse proxy with authentication.
+
+## Docker
+
+```bash
+docker build -t aitracking .
+docker run --rm -p 8000:8000 -v "$PWD/data:/data" aitracking \
+  serve --host 0.0.0.0 --source "rtsp://user:pass@camera/stream" \
+        --config /app/configs/example.yaml --events /data/events.csv
+```
+
+The image uses CPU PyTorch and has the default weights baked in, so it starts offline.
+
+## Tips for real deployments
+
+- **Speed:** the model is the bottleneck. Measured on a low-power laptop CPU (Intel i5-10210U), `yolo11n.pt` takes ~170 ms per frame at `--imgsz 640` (~6 FPS) and ~125 ms at `--imgsz 480` (~8 FPS); desktop CPUs are several times faster and an NVIDIA GPU reaches real-time easily. That is enough for counting people walking past a door. For live cameras AITracking always processes the *newest* frame and skips the backlog, so the dashboard stays real-time even when detection is slower than the camera (`dropped_frames` in `/api/stats` shows how many were skipped). Run one `aitrack serve` process per camera on different ports; use a GPU for `yolo11s/m` or many cameras.
+- **Accuracy:** mount cameras high and angled down, put the counting line where people walk across it, not along it, and keep it away from the frame edges so objects are tracked for a few frames before they cross.
+- **Custom objects:** train with Ultralytics (`yolo detect train data=my.yaml model=yolo11n.pt`) and pass `--model runs/detect/train/weights/best.pt --classes helmet,no-helmet`.
+- **Privacy:** only counts and events are stored, never images, unless you pass `--output`. Follow your site's CCTV / PDPA policy before recording.
+
+## Project layout
+
+```
+aitracking/            the application
+  cli.py               `aitrack run` / `aitrack serve`
+  pipeline.py          frame loop: track -> count -> draw -> outputs
+  tracker.py           YOLO + ByteTrack wrapper (the only Ultralytics-specific file)
+  counting.py          line in/out counter and zone occupancy / dwell time
+  geometry.py          line / polygon math
+  events.py            event model and CSV / JSONL log
+  server.py, static/   FastAPI dashboard and API
+configs/               example config
+lessons/               the original machine-learning lessons (regression, CNN, RNN, GAN, ...)
+tests/                 pytest suite for the app and the lessons
+```
 
 ## Development
 
 ```bash
-ruff check .        # lint
-pytest              # run the unit tests (tests/ folder)
+pip install -e ".[dev]" -r lessons/requirements.txt
+ruff check .
+pytest
 ```
 
-Both run automatically in CI (GitHub Actions) on every push and pull request,
-with tests executed against Python 3.9, 3.10, 3.11 and 3.12.
+The app tests use a scripted fake tracker and synthetic videos, so they need no
+GPU and no model download. CI runs lint and tests on Python 3.9 – 3.12 for every
+push and pull request.
 
-The suite covers three things and finishes in a few seconds, without needing
-TensorFlow:
+## Machine-learning lessons
 
-1. **The pure-math core** — activation functions, encode/decode helpers, the
-   normal-equation and gradient-descent regressions, the logistic cost
-   function, the genetic-algorithm operators, and the Kalman lane-tracking
-   windows.
-2. **Repository integrity** — every tracked binary must have a valid magic
-   number and contain no U+FFFD replacement characters, so the corruption
-   described above cannot silently return.
-3. **Import safety** — every lesson module must import silently, create no
-   matplotlib figures, and keep its demo body behind a `__main__` guard
-   (checked by parsing the AST, so no heavy dependencies are needed).
+The repository started as a collection of hands-on ML / deep-learning lessons.
+They are still here, cleaned up and tested, in [`lessons/`](lessons/README.md).
 
 ## Licence
 
-This project does not declare a licence of its own; see
-[`NOTICES.md`](NOTICES.md) for what that means and for the licences of the
-vendored third-party files.
-
-## Credits
-
-Many examples are adapted from public tutorials and repositories; source links
-and citations are kept in the header comments of each file, and collected in
-[`NOTICES.md`](NOTICES.md). Original learning repository by
-[adminho](https://github.com/adminho/machine-learning) (see `Setup/Readme.md`).
+AITracking uses [Ultralytics YOLO](https://github.com/ultralytics/ultralytics),
+which is **AGPL-3.0**. Internal use is fine; exposing a modified version to
+outside users or shipping it in a product requires either publishing the source
+or an Ultralytics Enterprise licence. See [`NOTICES.md`](NOTICES.md) for details,
+third-party attributions, and the note on this repository's own licence.

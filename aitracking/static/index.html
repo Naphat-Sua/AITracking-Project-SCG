@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AITracking Dashboard</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --panel: #ffffff; --text: #1d2127; --muted: #636b76; --border: #dfe3e8;
+    --accent: #c8102e; --ok: #1a7f37; --warn: #b35900; --bad: #c8102e; --in: #1f6feb; --out: #b35900;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #111418; --panel: #1a1e24; --text: #e6e9ed; --muted: #9aa3ad; --border: #2b3139;
+            --accent: #ff5a6e; --ok: #3fb950; --warn: #e3a03a; --bad: #ff6b6b; --in: #58a6ff; --out: #e3a03a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 14px/1.45 system-ui, -apple-system, "Segoe UI", "Noto Sans Thai", sans-serif; }
+  header { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--border);
+           background: var(--panel); flex-wrap: wrap; }
+  header h1 { font-size: 17px; margin: 0; letter-spacing: .2px; }
+  header h1 b { color: var(--accent); }
+  .pill { font-size: 12px; padding: 2px 10px; border-radius: 99px; border: 1px solid var(--border); color: var(--muted); }
+  .pill.running { color: var(--ok); border-color: currentColor; }
+  .pill.error { color: var(--bad); border-color: currentColor; }
+  .pill.finished { color: var(--warn); border-color: currentColor; }
+  header .src { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+  header .spacer { flex: 1; }
+  header a { color: var(--muted); font-size: 12px; }
+  main { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); gap: 16px; padding: 16px 20px; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; padding: 12px 16px; } }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px; min-width: 0; }
+  .card h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 0 0 10px; }
+  .video { padding: 0; overflow: hidden; background: #000; display: flex; align-items: center; justify-content: center;
+           min-height: 240px; }
+  .video img { width: 100%; height: auto; display: block; }
+  .video .msg { color: #bbb; padding: 40px 16px; text-align: center; }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .kpi { background: var(--bg); border-radius: 8px; padding: 10px; }
+  .kpi .v { font-size: 26px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .kpi .l { font-size: 12px; color: var(--muted); }
+  .side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { text-align: left; padding: 6px 4px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  th { color: var(--muted); font-weight: 500; font-size: 12px; }
+  td.n, th.n { text-align: right; }
+  .in { color: var(--in); } .out { color: var(--out); }
+  .empty { color: var(--muted); font-size: 13px; }
+  .events { grid-column: 1 / -1; }
+  .events .scroll { max-height: 320px; overflow: auto; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: var(--bg); border-radius: 6px; padding: 3px 8px; font-size: 12px; }
+  .err { color: var(--bad); white-space: pre-wrap; margin-top: 8px; font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1><b>AI</b>Tracking</h1>
+  <span id="status" class="pill">connecting…</span>
+  <span id="src" class="src"></span>
+  <span class="spacer"></span>
+  <a href="/api/stats" target="_blank">JSON API</a>
+  <a href="/api/events/file" id="dl">Download events</a>
+</header>
+<main>
+  <div class="card video" id="videoCard">
+    <img id="stream" alt="Live annotated video" src="/stream.mjpg">
+  </div>
+  <div class="side">
+    <div class="card">
+      <h2>Now</h2>
+      <div class="kpis">
+        <div class="kpi"><div class="v" id="kCurrent">–</div><div class="l">tracked now</div></div>
+        <div class="kpi"><div class="v" id="kUnique">–</div><div class="l">unique objects</div></div>
+        <div class="kpi"><div class="v" id="kFps">–</div><div class="l">FPS</div></div>
+      </div>
+      <div class="chips" id="classes" style="margin-top:10px"></div>
+      <div class="err" id="error"></div>
+    </div>
+    <div class="card">
+      <h2>Counting lines</h2>
+      <div id="lines" class="empty">No lines configured.</div>
+    </div>
+    <div class="card">
+      <h2>Zones</h2>
+      <div id="zones" class="empty">No zones configured.</div>
+    </div>
+  </div>
+  <div class="card events">
+    <h2>Recent events</h2>
+    <div class="scroll"><table>
+      <thead><tr><th>Time</th><th>Event</th><th>Where</th><th>Object</th><th class="n">Detail</th></tr></thead>
+      <tbody id="events"><tr><td colspan="5" class="empty">No events yet.</td></tr></tbody>
+    </table></div>
+  </div>
+</main>
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtT = (s) => { s = Math.max(0, Math.round(s)); const h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60;
+  return (h ? h + ":" + String(m).padStart(2,"0") : m) + ":" + String(x).padStart(2,"0"); };
+
+function renderStats(s) {
+  const st = $("status"); st.textContent = s.status; st.className = "pill " + s.status;
+  $("src").textContent = "source: " + s.source + (s.frame_size ? `  ·  ${s.frame_size[0]}×${s.frame_size[1]}` : "")
+    + `  ·  ${fmtT(s.elapsed_s)}`;
+  $("kCurrent").textContent = s.current_total;
+  $("kUnique").textContent = s.unique_total;
+  $("kFps").textContent = s.fps.toFixed(1);
+  $("classes").innerHTML = Object.entries(s.unique).sort((a,b) => b[1]-a[1])
+    .map(([c, n]) => `<span class="chip">${esc(c)}: ${s.current[c] || 0} now · ${n} total</span>`).join("");
+  $("error").textContent = s.error ? "Error: " + s.error : "";
+
+  if (s.lines.length) {
+    $("lines").className = "";
+    $("lines").innerHTML = `<table><thead><tr><th>Line</th><th class="n">In</th><th class="n">Out</th><th class="n">Net</th></tr></thead><tbody>`
+      + s.lines.map(l => `<tr><td>${esc(l.name)}</td><td class="n in">${l.in}</td><td class="n out">${l.out}</td><td class="n">${l.net}</td></tr>`).join("")
+      + `</tbody></table>`;
+  }
+  if (s.zones.length) {
+    $("zones").className = "";
+    $("zones").innerHTML = `<table><thead><tr><th>Zone</th><th class="n">Inside</th><th class="n">Entries</th><th class="n">Avg stay</th></tr></thead><tbody>`
+      + s.zones.map(z => `<tr><td>${esc(z.name)}</td><td class="n">${z.occupancy}</td><td class="n">${z.entries}</td><td class="n">${z.avg_dwell_s == null ? "–" : z.avg_dwell_s.toFixed(1) + " s"}</td></tr>`).join("")
+      + `</tbody></table>`;
+  }
+  if (s.status !== "running" && s.status !== "starting") {
+    const img = $("stream");
+    if (img && !img.dataset.stopped) { img.dataset.stopped = "1"; img.src = "/snapshot.jpg?" + Date.now(); }
+  }
+}
+
+function renderEvents(list) {
+  if (!list.length) return;
+  const label = { line_cross: "crossed", zone_enter: "entered", zone_exit: "left" };
+  $("events").innerHTML = list.map(e => {
+    const detail = e.kind === "line_cross" ? `<span class="${e.direction}">${e.direction}</span>`
+      : e.dwell_s != null ? `${e.dwell_s.toFixed(1)} s inside` : "";
+    const when = e.wall_time ? e.wall_time.slice(11, 19) : fmtT(e.t);
+    return `<tr><td>${esc(when)}</td><td>${label[e.kind] || esc(e.kind)}</td><td>${esc(e.name)}</td><td>#${e.track_id} ${esc(e.cls)}</td><td class="n">${detail}</td></tr>`;
+  }).join("");
+}
+
+async function tick() {
+  try {
+    const [s, ev] = await Promise.all([fetch("/api/stats").then(r => r.json()), fetch("/api/events?limit=100").then(r => r.json())]);
+    renderStats(s); renderEvents(ev);
+  } catch (err) {
+    const st = $("status"); st.textContent = "disconnected"; st.className = "pill error";
+  }
+}
+function attachStream() {
+  const card = $("videoCard");
+  card.innerHTML = '<img id="stream" alt="Live annotated video" src="/stream.mjpg?' + Date.now() + '">';
+  $("stream").addEventListener("error", () => {
+    card.innerHTML = '<div class="msg">Waiting for video… (the model loads on first start)</div>';
+    setTimeout(attachStream, 3000);
+  });
+}
+attachStream();
+tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>

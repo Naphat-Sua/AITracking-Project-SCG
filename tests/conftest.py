@@ -16,14 +16,15 @@ import matplotlib
 matplotlib.use("Agg")  # never open GUI windows in tests
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+LESSONS_ROOT = REPO_ROOT / "lessons"
 
 _loaded = {}
 
 
 def load_module(relative_path, module_name=None):
     """Load a module from a repo-relative file path, e.g.
-    ``load_module("Activation/Activation.py")``."""
-    path = REPO_ROOT / relative_path
+    ``load_module("Activation/Activation.py")`` (relative to ``lessons/``)."""
+    path = LESSONS_ROOT / relative_path
     if module_name is None:
         module_name = "lesson_" + path.stem.replace("-", "_").lower()
 

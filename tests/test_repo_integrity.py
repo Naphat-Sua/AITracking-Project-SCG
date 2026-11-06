@@ -13,10 +13,11 @@
 """
 
 import subprocess
+import sys
 
 import pytest
 
-from conftest import REPO_ROOT, load_module
+from conftest import LESSONS_ROOT, REPO_ROOT, load_module
 
 # Magic numbers (file signatures) for the binary formats this repo stores.
 MAGIC_NUMBERS = {
@@ -165,7 +166,7 @@ def test_scripts_do_their_work_behind_a_main_guard(relative_path):
     """
     import ast
 
-    source = (REPO_ROOT / relative_path).read_text(encoding="utf-8")
+    source = (LESSONS_ROOT / relative_path).read_text(encoding="utf-8")
     tree = ast.parse(source, filename=relative_path)
 
     allowed = (
@@ -217,7 +218,7 @@ def test_every_python_file_compiles():
     assert len(py_files) > 20, "expected to find the lesson scripts"
 
     result = subprocess.run(
-        ["python", "-m", "py_compile", *py_files],
+        [sys.executable, "-m", "py_compile", *py_files],
         cwd=REPO_ROOT, capture_output=True, text=True,
     )
     assert result.returncode == 0, f"Syntax errors:\n{result.stderr}"

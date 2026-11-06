@@ -1,0 +1,10 @@
+.git
+.github
+.venv
+lessons
+tests
+**/__pycache__
+*.mp4
+*.pt
+*.csv
+*.jsonl

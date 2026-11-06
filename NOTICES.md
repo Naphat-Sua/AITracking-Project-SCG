@@ -4,6 +4,26 @@ This repository is a teaching collection, and several files are copied or
 adapted from other open-source projects. Their original licences and copyright
 notices apply to those files and are preserved in the file headers.
 
+Paths in the lesson sections below are relative to the [`lessons/`](lessons) folder.
+
+## AITracking app dependencies
+
+| Package | Used for | Licence |
+| --- | --- | --- |
+| [Ultralytics](https://github.com/ultralytics/ultralytics) (YOLO models, ByteTrack / BoT-SORT trackers) | detection and tracking | **AGPL-3.0**, or an Ultralytics Enterprise licence |
+| [OpenCV](https://opencv.org) | video I/O and drawing | Apache-2.0 |
+| [FastAPI](https://fastapi.tiangolo.com), [Uvicorn](https://www.uvicorn.org) | dashboard and API | MIT / BSD-3-Clause |
+| [PyTorch](https://pytorch.org) | model runtime (installed by Ultralytics) | BSD-3-Clause |
+
+**AGPL-3.0 matters for company use.** Running the app internally is fine, but if
+AITracking (or a modified copy) is offered to people outside the organisation
+over a network, or shipped inside a product, AGPL-3.0 requires publishing the
+complete source of that service. For closed-source/commercial deployment, buy an
+[Ultralytics Enterprise licence](https://www.ultralytics.com/license) or swap the
+detector: everything outside `aitracking/tracker.py` is independent of
+Ultralytics, and any object with an `update(frame) -> list[Track]` method can be
+passed to `Pipeline(tracker=...)`.
+
 ## Vendored source files
 
 | Path | Upstream project | Licence | Copyright |

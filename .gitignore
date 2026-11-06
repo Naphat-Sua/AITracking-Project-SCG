@@ -18,19 +18,30 @@ env/
 .DS_Store
 Thumbs.db
 
-# Generated outputs from the examples
-Generative-Algorithm/error.txt
-Generative-Algorithm/my-waypoints-dist-dur.csv
-Generative-Algorithm/debug_all_route.csv
-Generative-Algorithm/show_routing.html
-Recurrent-Neural-Network/temp/
-Text-Classification/pickle/
-Generative-Adversarial/mnist_generator.h5
-Generative-Adversarial/mnist_discriminator.h5
-Generative-Adversarial/MNIST_ACCURACY.png
-Generative-Adversarial/MNIST_GENERATE.png
-Convolutional-Network/ckeckpoint/
+# AITracking app: model weights, recordings and event logs
+*.pt
+*.onnx
 *.mp4
+*.avi
+*.mov
+events*.csv
+events*.jsonl
+summary*.json
+runs/
+data/
+
+# Generated outputs from the lessons
+lessons/Generative-Algorithm/error.txt
+lessons/Generative-Algorithm/my-waypoints-dist-dur.csv
+lessons/Generative-Algorithm/debug_all_route.csv
+lessons/Generative-Algorithm/show_routing.html
+lessons/Recurrent-Neural-Network/temp/
+lessons/Text-Classification/pickle/
+lessons/Generative-Adversarial/mnist_generator.h5
+lessons/Generative-Adversarial/mnist_discriminator.h5
+lessons/Generative-Adversarial/MNIST_ACCURACY.png
+lessons/Generative-Adversarial/MNIST_GENERATE.png
+lessons/Convolutional-Network/ckeckpoint/
 
 # Dataset caches
 scikit_learn_data/

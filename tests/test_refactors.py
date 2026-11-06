@@ -88,9 +88,9 @@ def test_refactored_entry_points_exist(relative_path, symbol):
     Parsed statically: these modules import tensorflow, which is optional here.
     """
     import ast
-    from conftest import REPO_ROOT
+    from conftest import LESSONS_ROOT
 
-    tree = ast.parse((REPO_ROOT / relative_path).read_text(encoding="utf-8"))
+    tree = ast.parse((LESSONS_ROOT / relative_path).read_text(encoding="utf-8"))
     names = {n.name for n in ast.walk(tree)
              if isinstance(n, (ast.FunctionDef, ast.ClassDef))}
     assert symbol in names, f"{relative_path} should define {symbol}()"
@@ -98,9 +98,9 @@ def test_refactored_entry_points_exist(relative_path, symbol):
 
 def test_neural_network_visualization_uses_its_own_model():
     """Regression test: update() used to read a module-level `model` global."""
-    from conftest import REPO_ROOT
+    from conftest import LESSONS_ROOT
 
-    source = (REPO_ROOT / "Neural-Network/Class.py").read_text(encoding="utf-8")
+    source = (LESSONS_ROOT / "Neural-Network/Class.py").read_text(encoding="utf-8")
     assert "self.model.predict(" in source
     assert "\t\tZ = model.predict(" not in source, (
         "Visualization.update() must predict with self.model, not a global"

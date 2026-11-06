@@ -1,0 +1,34 @@
+# AITracking example config.  Run with:
+#   aitrack serve --config configs/example.yaml
+#   aitrack run   --config configs/example.yaml --source my-video.mp4 --output out.mp4
+#
+# All coordinates are fractions of the frame: x = 0 (left) .. 1 (right), y = 0 (top) .. 1 (bottom),
+# so the same config works at any camera resolution.
+
+# Video file, webcam index (0 = first camera) or stream URL, e.g.
+#   rtsp://user:password@192.168.1.64:554/Streaming/Channels/101
+source: 0
+
+# YOLO weights. yolo11n.pt is fast on CPU; yolo11s.pt / yolo11m.pt are more accurate (GPU recommended).
+# A custom model trained with Ultralytics (e.g. helmets, forklifts) works too: model: models/best.pt
+model: yolo11n.pt
+tracker: bytetrack.yaml        # or botsort.yaml (slower, better re-identification)
+
+# Only track these classes (COCO names for the default model). Remove the line to track everything.
+classes: [person, bicycle, car, motorcycle, bus, truck]
+
+conf: 0.35          # minimum detection confidence
+imgsz: 640          # inference size; lower = faster, higher = finds smaller objects
+anchor: bottom      # count where the object touches the ground (bottom) or by box centre (center)
+count_once: true    # count each tracked object at most once per line
+
+# Counting lines. "in" = crossing towards the left-hand side of someone walking from the
+# first point to the second. Vertical line drawn top->bottom: left->right is "in".
+lines:
+  - name: entrance
+    points: [[0.5, 0.05], [0.5, 0.95]]
+
+# Zones: how many objects are inside right now, how many entered, and how long they stayed.
+zones:
+  - name: waiting-area
+    points: [[0.05, 0.55], [0.4, 0.55], [0.4, 0.95], [0.05, 0.95]]
